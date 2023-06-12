@@ -1,0 +1,23 @@
+<%# -- Java实体模板 -- %>
+import lombok.Data;
+
+<% if(classComment){ -%>
+/**
+* <%= classComment %>
+*/
+<% } -%>
+@Data
+public class <%= className %> implements Serializable {
+  <%# -- 序列化 -- %>
+  private static final long serialVersionUID = 1L;
+  <%# -- 循环生成字段 -- %>
+  <%_ fieldList.forEach( field => { _%>
+  <%_ if( field.comment ) { _%>
+    /**
+     * <%= field.comment %>
+     */
+  <%_ } _%>
+    private <%= field.javaType %> <%= field.fieldName %>;
+
+  <%_ }) _%>
+}

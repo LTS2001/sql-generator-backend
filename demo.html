@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang=en>
+
+<head>
+  <meta charset=UTF-8>
+  <meta http-equiv=X-UA-Compatible content=IE=edge>
+  <meta name=viewport content=width=device-width, initial-scale=1.0>
+  <title>Document</title>
+  <script src=https://cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.min.js></script>
+</head>
+
+<body>
+  <button id="btn">发送</button>
+  <button id="btn1">发送我的</button>
+  <script>
+    document.getElementById('btn').addEventListener('click', () => {
+      axios.post('https://sql-father-backend-974538-1256524210.ap-shanghai.run.tcloudbase.com/api/sql/generate/schema',
+        {
+          fieldList: [
+            {
+              "fieldName": "username",
+              "comment": "用户名",
+              "fieldType": "varchar(256)",
+              "mockType": "随机",
+              "mockParams": "人名",
+              "notNull": true,
+              "primaryKey": false,
+              "autoIncrement": false
+            },
+            {
+              "fieldName": "fix",
+              "comment": "固定",
+              "fieldType": "varchar(256)",
+              "mockType": "固定",
+              "mockParams": "",
+              "notNull": true,
+              "primaryKey": false,
+              "autoIncrement": false
+            },
+            {
+              "fieldName": "increase",
+              "comment": "用户名",
+              "fieldType": "varchar(256)",
+              "mockType": "递增",
+              "mockParams": 2,
+              "notNull": true,
+              "primaryKey": false,
+              "autoIncrement": false
+            },
+            {
+              "fieldName": "rendexp",
+              "comment": "用户名",
+              "fieldType": "varchar(256)",
+              "mockType": "规则",
+              "mockParams": "13[0-9]{9}",
+              "notNull": true,
+              "primaryKey": false,
+              "autoIncrement": false
+            },
+            {
+              "fieldName": "none",
+              "comment": "用户名",
+              "defaultValue": "none",
+              "fieldType": "varchar(256)",
+              "mockType": "不模拟",
+              "mockParams": "",
+              "notNull": true,
+              "primaryKey": false,
+              "autoIncrement": false
+            }
+          ],
+          mockNum: "10",
+          tableName: 'my_test_table'
+        },
+      ).then(res => {
+        console.log(res);
+      })
+    })
+    
+    document.getElementById('btn1').addEventListener('click', () => {
+      axios.post('http://127.0.0.1:7001/sql/generate/schema',
+        {
+          fieldList: [
+            {
+              "fieldName": "username",
+              "comment": "用户名comment",
+              "fieldType": "varchar(256)",
+              "mockType": "随机",
+              "mockParams": "人名",
+              "notNull": true,
+              "primaryKey": false,
+              "autoIncrement": false
+            },
+            {
+              "fieldName": "fix",
+              "comment": "固定comment",
+              "fieldType": "varchar(256)",
+              "mockType": "固定",
+              "mockParams": "",
+              "notNull": true,
+              "primaryKey": false,
+              "autoIncrement": false
+            },
+            {
+              "fieldName": "increase",
+              "comment": "递增comment",
+              "fieldType": "varchar(256)",
+              "mockType": "递增",
+              "mockParams": 2,
+              "notNull": true,
+              "primaryKey": false,
+              "autoIncrement": false
+            },
+            {
+              "fieldName": "rendexp",
+              "comment": "规则comment",
+              "fieldType": "varchar(256)",
+              "mockType": "规则",
+              "mockParams": "13[0-9]{9}",
+              "notNull": true,
+              "primaryKey": false,
+              "autoIncrement": false
+            },
+            {
+              "fieldName": "none",
+              "comment": "不模拟comment",
+              "defaultValue": "none",
+              "fieldType": "varchar(256)",
+              "mockType": "不模拟",
+              "mockParams": "",
+              "notNull": true,
+              "primaryKey": false,
+              "autoIncrement": false
+            }
+          ],
+          mockNum: "10",
+          tableName: 'my_test_table',
+          tableComment: '我是表注释'
+        },
+      ).then(res => {
+        console.log(res);
+      })
+    })
+
+  </script>
+</body>
+
+</html>

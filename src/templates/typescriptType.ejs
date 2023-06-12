@@ -1,0 +1,15 @@
+<%# TypeScript 类型生成模板 %>
+<%_ if(classComment){ _%>
+/**
+* <%= classComment %>
+*/
+<%_ }_%>
+interface <%= className %> {
+<%#-- 循环生成字段 --%>
+<%_ fieldList.forEach(field => { _%>
+  <%_ if(field.comment){ _%>
+  // <%= field.comment %>
+  <%_ } _%>
+  <%= field.fieldName %>: <%= field.typescriptType %>
+<%_ }); _%>
+}

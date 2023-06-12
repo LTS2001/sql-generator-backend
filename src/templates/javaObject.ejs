@@ -1,0 +1,8 @@
+<%# Java 对象模板 %>
+<%_ resultList.forEach(element => { _%>
+<%= element.className %> <%= element.objectName %> = new <%= element.className %>();
+<%_ element.fieldList.forEach(field=> { _%>
+<%= element.objectName %>.<%= field.setMethod %>("<%= field.value %>");
+<%_ }); _%>
+
+<%_ }); _%>
