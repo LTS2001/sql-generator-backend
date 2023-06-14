@@ -4,9 +4,11 @@ import { join } from 'path';
 import * as egg from '@midwayjs/web';
 import * as view from '@midwayjs/view-ejs';
 import * as crossDomain from '@midwayjs/cross-domain';
+import * as sequelize from '@midwayjs/sequelize';
+import * as upload from '@midwayjs/upload';
 
 @Configuration({
-  imports: [egg, view, crossDomain],
+  imports: [egg, view, crossDomain, sequelize, upload],
   importConfigs: [join(__dirname, './config')],
 })
 export class ContainerLifeCycle implements ILifeCycle {

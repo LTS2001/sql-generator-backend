@@ -3,15 +3,15 @@
  */
 interface TableSchema {
   // 库名
-  dbName: string
+  dbName: string;
   // 表名
-  tableName: string
+  tableName: string;
   // 表注释
-  tableComment: string
+  tableComment: string;
   // 模拟数据条数
-  mockNum: number
+  mockNum: number;
   // 列信息列表
-  fieldList: Field[]
+  fieldList: Field[];
 }
 
 /**
@@ -19,23 +19,23 @@ interface TableSchema {
  */
 interface Field {
   // 字段名
-  fieldName: string
+  fieldName: string;
   // 字段类型
-  fieldType: string
+  fieldType: string;
   // 默认值
-  defaultValue: string
+  defaultValue: string;
   // 是否非空
-  notNull: boolean
+  notNull: boolean;
   // 注释（字段中文名）
-  comment: string
+  comment: string;
   // 是否为主键
-  primaryKey: boolean
+  primaryKey: boolean;
   // 是否自增
-  autoIncrement: boolean
+  autoIncrement: boolean;
   // 模拟类型（随机、图片、规则、词库）
-  mockType: string
+  mockType: string;
   // 模拟参数
-  mockParams: string
+  mockParams: string;
   // 附加条件
-  onUpdate: string
+  onUpdate: string;
 }
