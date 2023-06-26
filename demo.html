@@ -12,6 +12,16 @@
 <body>
   <button id="btn">发送</button>
   <button id="btn1">发送我的</button>
+  <h1>登录</h1>
+  <form action="http://127.0.0.1:7001/user/login" method="post">
+    <input type="text" name="userAccount">
+    <input type="text" name="userPassword">
+    <input type="submit">
+  </form>
+  <h1>获取当前用户信息</h1>
+  <form action="http://127.0.0.1:7001/user/get/login">
+    <input type="submit">
+  </form>
   <script>
     document.getElementById('btn').addEventListener('click', () => {
       axios.post('https://sql-father-backend-974538-1256524210.ap-shanghai.run.tcloudbase.com/api/sql/generate/schema',
@@ -76,7 +86,7 @@
         console.log(res);
       })
     })
-    
+
     document.getElementById('btn1').addEventListener('click', () => {
       axios.post('http://127.0.0.1:7001/sql/generate/schema',
         {

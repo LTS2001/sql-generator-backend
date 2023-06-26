@@ -1,33 +1,25 @@
-/**
- * @param 第一个参数（必选）：code
- * @param 第二个参数（可选）：data
- * @param 第三个参数（可选）：message
- */
+import { ErrorCode, ErrorMsg } from './ErrorCode';
+
 export class BaseResponse<T> {
-  code: number;
+  code: number | ErrorCode;
   data: T;
   message: string;
-  // 使用 ES6 中的 rest 来模拟 java 中方法的重写
-  constructor(...rest) {
-    switch (rest.length) {
-      case 1:
-        // 只有一个参数，说明是错误的响应
-        this.code = rest[0];
-        this.data = null;
-        this.message = '';
-        break;
-      case 2:
-        // 没有 message 的成功响应
-        this.code = rest[0];
-        this.data = rest[1];
-        this.message = '';
-        break;
-      case 3:
-        // 成功响应
-        this.code = rest[0];
-        this.data = rest[1];
-        this.message = rest[2];
-        break;
+
+  // 重载签名
+  constructor(code: number, data: T, message: string);
+  constructor(code: number, data: T);
+  constructor(code: ErrorCode);
+
+  // 实现签名
+  constructor(code: number | ErrorCode, data: T | null = null, message = '') {
+    if (typeof code === 'number') {
+      this.code = code;
+      this.data = data;
+      this.message = message;
+    } else {
+      this.code = code;
+      this.data = null;
+      this.message = ErrorMsg[ErrorCode[code]];
     }
   }
 }

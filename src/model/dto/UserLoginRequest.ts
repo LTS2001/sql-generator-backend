@@ -1,15 +1,10 @@
 import { Rule, RuleType } from '@midwayjs/validate';
+
 /**
- * 用于校验请求中 body 的参数类型
+ * 用于校验登录请求参数中的参数类型
  */
 const requiredString = RuleType.string().required();
-export class UserRegisterRequest {
-  /**
-   * 用户名
-   */
-  @Rule(requiredString.max(16))
-  userName: string;
-
+export class userLoginRequest {
   /**
    * 用户账号
    */
@@ -21,10 +16,4 @@ export class UserRegisterRequest {
    */
   @Rule(requiredString.min(8))
   userPassword: string;
-
-  /**
-   * 密码验证
-   */
-  @Rule(requiredString.min(8))
-  checkPassword: string;
 }

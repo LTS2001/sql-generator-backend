@@ -6,14 +6,19 @@ import * as view from '@midwayjs/view-ejs';
 import * as crossDomain from '@midwayjs/cross-domain';
 import * as sequelize from '@midwayjs/sequelize';
 import * as upload from '@midwayjs/upload';
+import * as validate from '@midwayjs/validate';
+
+import { GlobalExceptionHandler } from './exception/GlobalExceptionHandler';
 
 @Configuration({
-  imports: [egg, view, crossDomain, sequelize, upload],
+  imports: [egg, view, crossDomain, sequelize, upload, validate],
   importConfigs: [join(__dirname, './config')],
 })
 export class ContainerLifeCycle implements ILifeCycle {
   @App()
   app: Application;
 
-  async onReady() {}
+  async onReady() {
+    this.app.useFilter([GlobalExceptionHandler]);
+  }
 }
