@@ -7,7 +7,9 @@ import {
   UpdatedAt,
 } from 'sequelize-typescript';
 
-@Table
+@Table({
+  tableName: 'table_info',
+})
 export class TableInfo extends Model {
   /**
    * 主键 id
