@@ -7,7 +7,9 @@ import {
   UpdatedAt,
 } from 'sequelize-typescript';
 
-@Table
+@Table({
+  tableName: 'dict',
+})
 export class Dict extends Model {
   /**
    * 主键 id
@@ -26,9 +28,7 @@ export class Dict extends Model {
   /**
    * 词库内容（JSON 数组）
    */
-  @Column({
-    type: DataType.TEXT,
-  })
+  @Column
   content: string;
 
   /**

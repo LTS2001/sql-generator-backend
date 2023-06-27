@@ -79,7 +79,7 @@ export class UserController {
    * 创建用户
    */
   @UseGuard(AuthGuard)
-  @Role([UserConstant.ADMIN_ROLE as string])
+  @Role([UserConstant.ADMIN_ROLE])
   @Post('/add')
   async addUser(@Body() userAddRequest: UserAddRequest) {
     const { userName, userAccount, userPassword, userRole } = userAddRequest;
@@ -97,7 +97,7 @@ export class UserController {
    * 删除用户
    */
   @UseGuard(AuthGuard)
-  @Role([UserConstant.ADMIN_ROLE as string])
+  @Role([UserConstant.ADMIN_ROLE])
   @Post('/delete', { middleware: [AuthMiddleware] })
   async deleteUser(@Body() deleteRequest: RequestById) {
     const resultData = await this.userServiceImpl.deleteUser(deleteRequest.id);
@@ -111,7 +111,7 @@ export class UserController {
    * 更新用户
    */
   @UseGuard(AuthGuard)
-  @Role([UserConstant.ADMIN_ROLE as string])
+  @Role([UserConstant.ADMIN_ROLE])
   @Post('/update', { middleware: [AuthMiddleware] })
   async updateUser(@Body() userUpdateRequest: UserUpdateRequest) {
     const resultData = await this.userServiceImpl.updateUser(userUpdateRequest);
@@ -125,7 +125,7 @@ export class UserController {
    * 根据 id 获取用户
    */
   @UseGuard(AuthGuard)
-  @Role([UserConstant.ADMIN_ROLE as string])
+  @Role([UserConstant.ADMIN_ROLE])
   @Get('/get', { middleware: [AuthMiddleware] })
   async getUserById(@Query() getRequest: RequestById) {
     const resultData = await this.userServiceImpl.getUser(getRequest.id);

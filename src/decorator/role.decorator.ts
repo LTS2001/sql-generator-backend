@@ -1,8 +1,9 @@
+import { UserConstant } from '@/constant/UserConstant';
 import { savePropertyMetadata } from '@midwayjs/core';
 
 export const ROLE_META_KEY = 'role:name';
 
-export function Role(roleName: string | string[]): MethodDecorator {
+export function Role(roleName: UserConstant | UserConstant[]): MethodDecorator {
   return (target, propertyKey) => {
     roleName = [].concat(roleName);
     // 只保存元数据
