@@ -1,19 +1,14 @@
-import { Provide } from '@midwayjs/core';
+import { Inject, Provide } from '@midwayjs/core';
+import { Context } from '@midwayjs/web';
 /**
  * JSON 生成器
  */
 @Provide()
 export class JsonBuilder {
-  buildJson(dataList: Array<Map<string, string>>): string {
-    const jsonResultStr = [];
-    let obj: object;
-    dataList.forEach(data => {
-      obj = {};
-      for (const [key, value] of data) {
-        obj[key] = value;
-      }
-      jsonResultStr.push(obj);
-    });
-    return JSON.stringify(jsonResultStr);
+  @Inject()
+  ctx: Context;
+
+  async buildJson(dataList: Array<object>): Promise<string> {
+    return await this.ctx.renderView('jsonData', { dataList });
   }
 }

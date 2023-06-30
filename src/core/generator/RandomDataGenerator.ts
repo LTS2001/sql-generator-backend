@@ -11,7 +11,6 @@ export class RandomDataGenerator implements DataGenerate {
   fakerUtils: FakerUtils;
 
   doGenerate(field: Field, rowNum: number): string[] {
-    console.log('RandomDataGenerator');
     const mockParams: string = field.mockParams;
     const list = new Array<string>();
     const randomType = MockParamsType[mockParams];

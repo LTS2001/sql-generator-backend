@@ -140,16 +140,16 @@ export class DictController {
   }
 
   /**
-   * 分页获取当前用户可选的资源列表
+   * 分页获取当前用户可选的资源列表（可选资源为 0-待审核的 1-已审核的(即为公开词库)）
    */
-  @Get('/my/list/page')
-  async listMyDictByPage(@Query() dictQueryRequest: DictQueryRequest) {
+  @Post('/my/list/page')
+  async listMyDictByPage(@Body() dictQueryRequest: DictQueryRequest) {
     const { current, pageSize } = dictQueryRequest;
     // current 和 pageSize 必须不能为空
     if (current == null || pageSize == null)
       throw new BusinessException(ErrorCode.PARAMS_ERROR);
     // 需要审核通过的，且是本人的
-    dictQueryRequest.reviewStatus = 1;
+    dictQueryRequest.reviewStatus !== 2;
     dictQueryRequest.userId =
       this.ctx.session[UserConstant.USER_LOGIN_STATE].id;
     const resultData = await this.dictServiceImpl.getQueryWrapper(
@@ -159,7 +159,7 @@ export class DictController {
   }
 
   /**
-   * 分页获取当前用户创建的资源
+   * 分页获取当前用户创建的资源（创建资源为 0-待审核的 1-已审核的 2-已拒绝的）
    */
   @Get('/my/add/list/page')
   async listMyAddDictByPage(@Query() dictQueryRequest: DictQueryRequest) {

@@ -7,7 +7,6 @@ import RandExp from 'randexp';
 @Scope(ScopeEnum.Singleton)
 export class RuleDataGenerator implements DataGenerate {
   doGenerate(field: Field, rowNum: number): string[] {
-    console.log('RuleDataGenerator');
     const mockParams: string = field.mockParams;
     const list = new Array<string>();
     const randExp = new RandExp(`${mockParams}`);

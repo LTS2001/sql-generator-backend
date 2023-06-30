@@ -1,0 +1,15 @@
+[
+<%_ dataList.forEach((data, i) => { _%>
+<%_ let count = 0 _%>
+  {
+  <%_ for (const key in data) { _%>
+    <%_ count++ _%>
+    "<%= key%>": "<%= data[key]%>"<%_ if(Object.getOwnPropertyNames(data).length > count){ %>,
+    <%_ } _%>
+  <%_ } _%>
+  
+  }<%_ if(i < dataList.length - 1){ _%>,
+   <%_ } _%>
+<%_ }) _%>
+
+]

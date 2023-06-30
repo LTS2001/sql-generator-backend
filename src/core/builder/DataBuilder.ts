@@ -9,15 +9,12 @@ export class DataBuilder {
   @Inject()
   private dataGeneratorFactory: DataGeneratorFactory;
   /**
-   * 生成数据，格式：[{id=1, username=余健柏, city="广州"},...]
+   * 生成数据，格式：[{id:1, username:余健柏, city:"广州"},...]
    * @param tableSchema 表概要
    * @param rowNum 生成行数
    */
-  generateData(
-    tableSchema: TableSchema,
-    rowNum: number
-  ): Array<Map<string, string>> {
-    const resultList = new Array<Map<string, string>>();
+  generateData(tableSchema: TableSchema, rowNum: number): Array<object> {
+    const resultList = [];
     // 依次生成每一列
     tableSchema.fieldList.forEach((field: Field) => {
       // 获取当前字段的 mockType 的 value。eg：NONE INCREASE FIXED RANDOM RULE DICT
@@ -33,13 +30,17 @@ export class DataBuilder {
       const fieldName = field.fieldName;
       // 整理结果列表
       if (mockData != null) {
-        for (let i = 0; i < rowNum; i++) {
-          // 判断 resultList 当前是否有值，没有值进入判断进行初始化
-          if (!resultList[i]) {
-            resultList[i] = new Map<string, string>();
+        // 判断 resultList 是否为空
+        if (resultList.length === 0) {
+          // 进行数组的初始化
+          for (let i = 0; i < rowNum; i++) {
+            resultList.push({});
           }
-          resultList[i].set(fieldName, mockData[i]);
         }
+        mockData.forEach((data, i) => {
+          const curObj = { ...resultList[i], [fieldName]: data };
+          resultList[i] = curObj;
+        });
       }
     });
     return resultList;

@@ -4,6 +4,8 @@ import { JavaEntityGenerateDTO } from '../model/dto/JavaEntityGenerateDTO';
 import { upperCame } from '../model/utils/UpperCame';
 import { JavaType } from '../model/enums/FieldTypeEnum';
 import { JavaObjectGenerateDTO } from '../model/dto/JavaObjectGenerateDTO';
+import { BusinessException } from '@/exception/BusinessException';
+import { ErrorCode } from '@/common/ErrorCode';
 /**
  * JAVA 生成器
  */
@@ -61,12 +63,12 @@ export class JavaBuilder {
    * @param dataList 数据列表
    * @return 生成的 java 代码
    */
-  buildJavaObjectCode(
+  async buildJavaObjectCode(
     tableSchema: TableSchema,
-    dataList: Array<Map<string, string>>
+    dataList: Array<object>
   ): Promise<string> {
     if (dataList == null) {
-      throw new Error('缺少示例数据');
+      throw new BusinessException(ErrorCode.SYSTEM_ERROR, '缺少示例数据');
     }
     // 将 dataList 中的 不模拟类型的
     /**
@@ -97,23 +99,15 @@ export class JavaBuilder {
         false
       );
       // 循环遍历 map 对象中的属性，并添加到fieldList数组中
-      for (const [key, value] of data) {
+      for (const key in data) {
         this.javaObjectGenerateDTO.fieldList.push({
           setMethod: upperCame('set_' + key, false),
-          value: value,
+          value: data[key],
         });
       }
       resultList.push(this.javaObjectGenerateDTO);
     });
-    return new Promise((resolve, reject) => {
-      this.ctx
-        .renderView('javaObject', { resultList })
-        .then(res => {
-          resolve(res);
-        })
-        .catch(error => {
-          reject(error.message);
-        });
-    });
+
+    return await this.ctx.renderView('javaObject', { resultList });
   }
 }

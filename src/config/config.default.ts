@@ -16,7 +16,7 @@ export default (appInfo: MidwayAppInfo) => {
       port: 7001,
     },
     // security: {
-    //   csrf: false,
+    //   csrf: true,
     // },
     paths: {
       '@/*': ['src/*'],
@@ -36,7 +36,7 @@ export default (appInfo: MidwayAppInfo) => {
     },
     ejs: {},
     cors: {
-      credentials: false,
+      credentials: true,
     },
     sequelize: {
       dataSource: {

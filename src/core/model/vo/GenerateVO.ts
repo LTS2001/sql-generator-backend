@@ -10,6 +10,8 @@ export class GenerateVO {
 
   dataJson: string;
 
+  dataList: Array<object>;
+
   javaEntityCode: string;
 
   javaObjectCode: string;

@@ -7,7 +7,8 @@ import { BusinessException } from '@/exception/BusinessException';
 import { ErrorCode } from '@/common/ErrorCode';
 import { UserServiceImpl } from './UserServiceImpl';
 import { DictQueryRequest } from '@/model/dto/DictQueryRequest';
-import { Op } from 'sequelize';
+import { Op, fn, col } from 'sequelize';
+import { PageInfoVO } from '@/typings/model/vo/pageInfoVo';
 
 @Provide()
 export class DictServiceImpl implements DictService {
@@ -29,7 +30,7 @@ export class DictServiceImpl implements DictService {
       // 去除每一项的空格
       return item.trim();
     });
-    return JSON.stringify(handleWordArr.join(', '));
+    return JSON.stringify(handleWordArr);
   }
 
   /**
@@ -38,7 +39,7 @@ export class DictServiceImpl implements DictService {
    */
   async getQueryWrapper(
     dictQueryRequest: DictQueryRequest
-  ): Promise<Array<Dict>> {
+  ): Promise<PageInfoVO<Dict>> {
     // 数据的偏移量
     let offset;
     const { name, content, reviewStatus, userId, pageSize, current } =
@@ -89,11 +90,31 @@ export class DictServiceImpl implements DictService {
       limit: pageSize,
       offset,
     });
-    const resultArr = [];
+    const [
+      {
+        dataValues: { total },
+      },
+    ] = await Dict.findAll({
+      attributes: [[fn('COUNT', col('id')), 'total']],
+      where: {
+        [Op.and]: [
+          name ? nameLikeSelect : null,
+          content ? contentLikeSelect : null,
+          reviewStatus ? reviewStatusSelect : null,
+          userId ? userIdSelect : null,
+        ],
+      },
+    });
+    const resultArr: Dict[] = [];
     result.forEach(item => {
       resultArr.push(item.dataValues);
     });
-    return resultArr;
+    return {
+      current,
+      total,
+      size: pageSize,
+      records: resultArr,
+    };
   }
 
   //#region CRUD

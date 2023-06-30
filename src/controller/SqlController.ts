@@ -5,6 +5,8 @@ import { GenerateFacade } from '@/core/GeneratorFacade';
 import { ResultUtils } from '@/common/ResultUtils';
 import { GenerateVO } from '@/core/model/vo/GenerateVO';
 import { TableSchemaBuilder } from '@/core/schema/TableSchemaBuilder';
+import { TableSchemaRequest } from '@/model/dto/TableSchemaRequest';
+import { Context } from '@midwayjs/web';
 
 @Controller('/sql')
 export class SqlController {
@@ -14,12 +16,14 @@ export class SqlController {
   private resultUtils: ResultUtils;
   @Inject()
   private tableSchemaBuilder: TableSchemaBuilder;
+  @Inject()
+  ctx: Context;
 
   @Post('/generate/schema')
-  async generateBySchema(@Body() tableSchema: TableSchema) {
+  async generateBySchema(@Body() tableSchemaRequest: TableSchemaRequest) {
     return new Promise((resolve, reject) => {
       try {
-        resolve(this.generatorFacade.generateAll(tableSchema));
+        resolve(this.generatorFacade.generateAll(tableSchemaRequest));
       } catch (error) {
         reject(error.message);
       }
@@ -69,16 +73,28 @@ export class SqlController {
   }
 
   @Post('/download/data/excel')
-  async downloadDataExcel() {
-    const data = [
-      ['1', '2', '3'],
-      ['true', 'false', 'null'],
-      ['foo', 'bar', '0.3'],
-      ['baz', 'null', 'qux'],
-    ];
-    console.log(data);
-    const buffer = xlsx.build([{ name: 'mySheetName', data, options: {} }]);
-    console.log(buffer);
+  async downloadDataExcel(@Body() tableSchemaReq: GenerateVO) {
+    const { dataList } = tableSchemaReq;
+    const mockDataList = new Array<Array<object>>();
+    const mockDataName = [];
+    for (const key in dataList[0]) {
+      mockDataName.push(key);
+    }
+    mockDataList.push(mockDataName);
+    dataList.forEach(data => {
+      const mockDataValue = [];
+      for (const key in data) {
+        mockDataValue.push(data[key]);
+      }
+      mockDataList.push(mockDataValue);
+    });
+    const buffer = xlsx.build([
+      {
+        name: `${tableSchemaReq.tableSchema.tableName}表mockData`,
+        data: mockDataList,
+        options: {},
+      },
+    ]);
     return buffer;
   }
 }

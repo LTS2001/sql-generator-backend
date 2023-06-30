@@ -8,7 +8,7 @@ export class DictQueryRequest extends PageRequest {
   /**
    * 名称
    */
-  @Rule(RuleType.string().max(30))
+  // @Rule(RuleType.string().max(30))
   name: string;
 
   /**

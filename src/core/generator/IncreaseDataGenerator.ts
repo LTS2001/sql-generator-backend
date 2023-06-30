@@ -6,7 +6,6 @@ import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
 @Scope(ScopeEnum.Singleton)
 export class IncreaseDataGenerator implements DataGenerate {
   doGenerate(field: Field, rowNum: number): string[] {
-    console.log('IncreaseDataGenerator');
     let mockParams: string = field.mockParams;
     const list = new Array<string>();
     if (mockParams == null) {

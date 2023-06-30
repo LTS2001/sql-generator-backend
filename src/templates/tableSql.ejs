@@ -1,5 +1,5 @@
 <%=tablePrefixComment%>
 create table if not exists <%= tableName %>
-  (<% for(let i=0; i < arr_field_str.length; i++) { %>
-      <%- arr_field_str[i]%><% if(arr_field_str.length - 1 !==i) { %>, <% } %><% } %>
-  ) <%= tableSuffixComment %>
+(<% for(let i=0; i < arr_field_str.length; i++) { %>
+  <%- arr_field_str[i]%><% if(arr_field_str.length - 1 !==i) { %>, <% } %><% } %>
+) <%- tableSuffixComment %>

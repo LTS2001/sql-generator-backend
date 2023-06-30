@@ -1,4 +1,5 @@
 import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
+import moment from 'moment';
 
 /**
  * mockType = 不模拟，数据生成器
@@ -7,7 +8,6 @@ import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
 @Scope(ScopeEnum.Singleton)
 export class DefaultDataGenerator implements DataGenerate {
   doGenerate(field: Field, rowNum: number): string[] {
-    console.log('DefaultDataGenerator');
     // 获取当前字段的 mockParams，eg：'人名'
     let mockParams: string = field.mockParams;
     const list = new Array<string>();
@@ -24,7 +24,7 @@ export class DefaultDataGenerator implements DataGenerate {
     let defaultValue = field.defaultValue;
     // 特殊逻辑，日期要伪造数据
     if (field.defaultValue === 'CURRENT_TIMESTAMP') {
-      defaultValue = new Date().toString();
+      defaultValue = moment().format('YYYY-MM-DD hh:mm:ss');
     }
     if (defaultValue != null || defaultValue !== '') {
       for (let i = 0; i < rowNum; i++) {
