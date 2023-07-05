@@ -9,13 +9,13 @@ export class TableInfoUpdateRequest {
   /**
    * 名称
    */
-  @Rule(RuleType.string().max(30).required())
+  @Rule(RuleType.string().max(30))
   name: string;
 
   /**
    * 内容
    */
-  @Rule(RuleType.string().max(20000).required())
+  @Rule(RuleType.string().max(20000))
   content: string;
 
   /**
@@ -27,5 +27,6 @@ export class TableInfoUpdateRequest {
   /**
    * 审核信息
    */
+  @Rule(RuleType.string())
   reviewMessage: string;
 }

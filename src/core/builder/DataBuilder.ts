@@ -1,6 +1,7 @@
 import { Provide, Inject } from '@midwayjs/core';
 import { MockType } from '../model/enums/MockTypeEnum';
 import { DataGeneratorFactory } from '../generator/DataGeneratorFactory';
+// import { Dict } from '@/model/entitys/dict';
 /**
  * 数据生成器
  */

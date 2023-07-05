@@ -1,18 +1,20 @@
 import { Provide, Inject } from '@midwayjs/core';
 import { Context } from '@midwayjs/koa';
 import { User } from '@/model/entitys/user';
+import { Op, fn, col } from 'sequelize';
 import { UserService } from '@/typings/service/UserService';
 import { UserConstant } from '@/constant/UserConstant';
 import { BusinessException } from '@/exception/BusinessException';
 import { ErrorCode } from '@/common/ErrorCode';
 import { decryptStr, encryptStr } from '@/utils/crypto';
 import { UserUpdateRequest } from '@/model/dto/UserUpdateRequest';
+import { UserQueryRequest } from '@/model/dto/UserQueryRequest';
+import { PageInfoVO } from '@/typings/model/vo/pageInfoVo';
 
 @Provide()
 export class UserServiceImpl implements UserService {
   @Inject()
   private ctx: Context;
-  private userLoginState = UserConstant.USER_LOGIN_STATE;
 
   /**
    * 用户注册
@@ -83,10 +85,6 @@ export class UserServiceImpl implements UserService {
     // 验证密码是否正确
     if (userPassword !== decryptStr(userInfo.userPassword))
       throw new BusinessException(ErrorCode.PARAMS_ERROR, '密码或账号错误！');
-    // @midwayjs/koa 内置了一个 session，自动为当前用户分配一个 sessionID，并通过响应头利用 set-cookie 返回给客户端。
-    // sessionData 可以存储在 session，也可以选择其他存储方式，如 redis
-    // 保存用户信息
-    this.ctx.session[this.userLoginState] = userInfo;
     return { ...userInfo, userPassword: null } as User;
   }
 
@@ -95,7 +93,7 @@ export class UserServiceImpl implements UserService {
    */
   getLoginUser(): User {
     // 先判断是否登录
-    const currentUser = this.ctx.session[this.userLoginState];
+    const currentUser = this.ctx.userInfo;
     if (currentUser == null)
       throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
     return { ...currentUser, userPassword: null } as User;
@@ -105,7 +103,7 @@ export class UserServiceImpl implements UserService {
    * 是否为管理员
    */
   isAdmin(): boolean {
-    const currentUser = this.ctx.session[this.userLoginState];
+    const currentUser = this.ctx.userInfo;
     return (
       currentUser != null && currentUser.userRole === UserConstant.ADMIN_ROLE
     );
@@ -115,10 +113,9 @@ export class UserServiceImpl implements UserService {
    * 用户注销
    */
   userLogout(): boolean {
-    const currentUser = this.ctx.session[this.userLoginState];
+    const currentUser = this.ctx.userInfo;
     if (currentUser == null)
       throw new BusinessException(ErrorCode.OPERATION_ERROR, '未登录');
-    this.ctx.session = null;
     return true;
   }
 
@@ -145,7 +142,14 @@ export class UserServiceImpl implements UserService {
    * @param 需要更新的用户信息
    */
   async updateUser(userUpdateInfo: UserUpdateRequest): Promise<boolean> {
-    const result = await User.update(userUpdateInfo, {
+    const handleUserInfo = { ...userUpdateInfo };
+    if (userUpdateInfo.userPassword) {
+      // 密码加密
+      const cryptoPassword = encryptStr(userUpdateInfo.userPassword);
+      handleUserInfo['userPassword'] = cryptoPassword;
+    }
+
+    const result = await User.update(handleUserInfo, {
       where: { id: userUpdateInfo.id },
     });
     if (result[0] === 0)
@@ -166,5 +170,119 @@ export class UserServiceImpl implements UserService {
     if (result == null)
       throw new BusinessException(ErrorCode.PARAMS_ERROR, '该用户不存在！');
     return { ...result.dataValues, userPassword: null };
+  }
+
+  /**
+   * 获取查询包装类
+   * @param dictQueryRequest 查询请求
+   */
+  async getQueryWrapper(
+    userQueryRequest: UserQueryRequest
+  ): Promise<PageInfoVO<User>> {
+    // 数据的偏移量
+    let offset;
+    const {
+      userName,
+      userAccount,
+      gender,
+      userRole,
+      userAvatar,
+      createTime,
+      updateTime,
+      pageSize,
+      current,
+    } = userQueryRequest;
+    // 若 sortField 或者 sortOrder 为空，则让其分别为 id 和 ASC
+    let { sortField, sortOrder } = userQueryRequest;
+    if (sortField == null || sortOrder == null) {
+      sortField = 'id';
+      sortOrder = 'ASC';
+    }
+    // 若 pageSize 或者 current 为空，则让 offset 为空
+    if (pageSize == null || current == null) {
+      offset = null;
+    } else {
+      offset = (current - 1) * pageSize;
+    }
+    // userName 模糊查询条件
+    const userNameLikeSelect = {
+      userName: {
+        [Op.like]: '%' + userName + '%',
+      },
+    };
+    // userAccount 模糊查询
+    const userAccountLikeSelect = {
+      userAccount: {
+        [Op.like]: '%' + userAccount + '%',
+      },
+    };
+    // userAvatar 模糊查询
+    const userAvatarLikeSelect = {
+      userAvatar: {
+        [Op.like]: '%' + userAvatar + '%',
+      },
+    };
+    // gender 模糊查询
+    const genderLikeSelect = {
+      gender: {
+        [Op.like]: '%' + gender + '%',
+      },
+    };
+    // userRole 模糊查询
+    const userRoleLikeSelect = {
+      userRole: {
+        [Op.like]: '%' + userRole + '%',
+      },
+    };
+    const result = await User.findAll({
+      order: [[sortField, sortOrder]],
+      where: {
+        [Op.and]: [
+          userName ? userNameLikeSelect : null,
+          userAccount ? userAccountLikeSelect : null,
+          userAvatar ? userAvatarLikeSelect : null,
+          gender ? genderLikeSelect : null,
+          userRole ? userRoleLikeSelect : null,
+          createTime ? { createTime } : null,
+          updateTime ? { updateTime } : null,
+          {
+            isDelete: 0,
+          },
+        ],
+      },
+      limit: pageSize,
+      offset,
+    });
+    const [
+      {
+        dataValues: { total },
+      },
+    ] = await User.findAll({
+      attributes: [[fn('COUNT', col('id')), 'total']],
+      where: {
+        [Op.and]: [
+          userName ? userNameLikeSelect : null,
+          userAccount ? userAccountLikeSelect : null,
+          userAvatar ? userAvatarLikeSelect : null,
+          gender ? genderLikeSelect : null,
+          userRole ? userRoleLikeSelect : null,
+          createTime ? { createTime } : null,
+          updateTime ? { updateTime } : null,
+          {
+            isDelete: 0,
+          },
+        ],
+      },
+    });
+    const resultArr: User[] = [];
+    result.forEach(item => {
+      resultArr.push({ ...item.dataValues, userPassword: null });
+    });
+    return {
+      current,
+      total,
+      size: pageSize,
+      records: resultArr,
+    };
   }
 }

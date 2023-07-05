@@ -1,6 +1,7 @@
 import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
 // eslint-disable-next-line node/no-unpublished-import
 import { Faker, zh_CN, en } from '@faker-js/faker';
+import moment from 'moment';
 import { MockParamsType } from '../enums/MockParamsTypeEnum';
 
 @Provide()
@@ -25,20 +26,31 @@ export class FakerUtils {
         return this.EN_FAKER.internet.email();
       case 'URL':
         return this.EN_FAKER.internet.url();
-      case 'IP':
+      case 'IPV4':
         return this.ZH_FAKER.internet.ipv4();
       case 'INTEGER':
-        return this.EN_FAKER.number.int().toString();
+        return this.EN_FAKER.number
+          .bigInt({
+            min: 100,
+            max: 10000,
+          })
+          .toString();
       case 'DECIMAL':
         return this.EN_FAKER.number.float().toString();
-      case 'UNIVERSITY':
-        return 'UNIVERSITY';
       case 'DATE':
-        return this.ZH_FAKER.date.anytime().toString();
-      case 'TIMESTAMP':
-        return 'TIMESTAMP';
+        return moment(this.EN_FAKER.date.past()).format('YYYY-MM-DD HH:mm:ss');
       case 'PHONE':
         return this.ZH_FAKER.phone.number();
+      case 'STRING':
+        return this.EN_FAKER.string.alphanumeric({
+          length: { min: 5, max: 10 },
+        });
+      case 'VEHICLE':
+        return this.EN_FAKER.vehicle.vehicle();
+      case 'FASH':
+        return this.EN_FAKER.animal.fish();
+      case 'INSECT':
+        return this.EN_FAKER.animal.insect();
       default:
         return '';
     }

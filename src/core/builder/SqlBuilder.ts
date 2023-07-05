@@ -1,7 +1,6 @@
-import { Provide, Inject } from '@midwayjs/core';
+import { Provide, Inject, Init } from '@midwayjs/core';
 import { Context } from '@midwayjs/web';
 import { SqlDialectFactory } from './sql/SqlDialectFactory';
-// import { MockType } from '../model/enums/MockTypeEnum';
 import { BusinessException } from '@/exception/BusinessException';
 import { ErrorCode } from '@/common/ErrorCode';
 /**
@@ -24,11 +23,10 @@ export class SqlBuilder {
   private ctx: Context;
 
   /**
-   * 构造建表 SQL
-   * @param tableSchema 表概要
-   * @return 生成的 sql
+   * 获取 MYSQL 数据库方言实例
    */
-  async buildCreateTableSql(tableSchema: TableSchema): Promise<string> {
+  @Init()
+  getMysqlDialectInstance() {
     // 获取 MYSQL 数据库方言实例
     this.sqlDialectInstance =
       this.sqlDialectFactory.getDialectInstance('MYSQL_DIALECT');
@@ -38,6 +36,13 @@ export class SqlBuilder {
         '该数据库方言不存在'
       );
     }
+  }
+  /**
+   * 构造建表 SQL
+   * @param tableSchema 表概要
+   * @return 生成的 sql
+   */
+  async buildCreateTableSql(tableSchema: TableSchema): Promise<string> {
     // 构造表名
     let tableName = this.sqlDialectInstance.wrapTableName(
       tableSchema.tableName

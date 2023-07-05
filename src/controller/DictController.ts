@@ -15,63 +15,70 @@ import { AuthGuard } from '@/guard/auth.guard';
 import { DictUpdateRequest } from '@/model/dto/DictUpdateRequest';
 import { Role } from '@/decorator/role.decorator';
 import { UserConstant } from '@/constant/UserConstant';
-import { AuthMiddleware } from '@/middleware/auth.middleware';
 import { DictQueryRequest } from '@/model/dto/DictQueryRequest';
 import { BusinessException } from '@/exception/BusinessException';
 import { ErrorCode } from '@/common/ErrorCode';
 import { Context } from '@midwayjs/koa';
-import { ValidLogin } from '@/middleware/validLogin.middleware';
+import { JwtMiddleware } from '@/middleware/jwt.middleware';
+import { Field, TableSchema } from '@/core/schema/TableSchema';
+import { Dict } from '@/model/entitys/dict';
+import { GenerateFacade } from '@/core/GeneratorFacade';
 
 /**
  * 词条接口，前提需要先登录
  */
-@Controller('/dict', { middleware: [ValidLogin] })
+@Controller('/dict')
 export class DictController {
   @Inject()
-  dictServiceImpl: DictServiceImpl;
-
+  private generatorFacade: GenerateFacade;
   @Inject()
-  resultUtils: ResultUtils;
-
+  private dictServiceImpl: DictServiceImpl;
   @Inject()
-  ctx: Context;
+  private resultUtils: ResultUtils;
+  @Inject()
+  private ctx: Context;
 
   //#region CRUD
   /**
-   * 创建
+   * （通过）创建
    */
-  @Post('/add')
+  @Post('/add', { middleware: [JwtMiddleware] })
   async addDict(@Body() dictAddRequest: DictAddRequest) {
     const dictContent = this.dictServiceImpl.handleDictContent(
       dictAddRequest.content
     );
     const resultData = await this.dictServiceImpl.addDict(
       dictAddRequest.name,
-      dictContent
+      dictContent,
+      dictAddRequest.reviewStatus,
+      dictAddRequest.reviewMessage
     );
     return this.resultUtils.success(resultData);
   }
 
   /**
-   * 删除
+   * （通过）删除
    */
-  @Post('/delete')
+  @Post('/delete', { middleware: [JwtMiddleware] })
   async deleteDict(@Body() deleteRequest: RequestById) {
     const resultData = await this.dictServiceImpl.deleteDict(deleteRequest.id);
     return this.resultUtils.success(resultData);
   }
 
   /**
-   * 更新（仅管理员）
+   * （通过）更新（仅管理员）
    */
   @UseGuard(AuthGuard)
   @Role([UserConstant.ADMIN_ROLE])
-  @Post('/update', { middleware: [AuthMiddleware] })
+  @Post('/update', { middleware: [JwtMiddleware] })
   async updateDict(@Body() dictUpdateRequest: DictUpdateRequest) {
     const { id, name, content, reviewStatus, reviewMessage } =
       dictUpdateRequest;
+    let handleContent: string;
     // 处理 content 内容
-    const handleContent = this.dictServiceImpl.handleDictContent(content);
+    if (content) {
+      handleContent = this.dictServiceImpl.handleDictContent(content);
+    }
     const resultData = await this.dictServiceImpl.updateDict(
       id,
       name,
@@ -94,24 +101,9 @@ export class DictController {
   }
 
   /**
-   * 获取 dict 全部列表（仅管理员）
+   * （通过）分页获取列表
    */
-  @UseGuard(AuthGuard)
-  @Role([UserConstant.ADMIN_ROLE])
-  @Get('/list', { middleware: [AuthMiddleware] })
-  async listDict() {
-    const resultData = await this.dictServiceImpl.getQueryWrapper(
-      new DictQueryRequest()
-    );
-    return this.resultUtils.success(resultData);
-  }
-
-  /**
-   * 分页获取列表
-   */
-  @UseGuard(AuthGuard)
-  @Role([UserConstant.ADMIN_ROLE])
-  @Post('/list/page', { middleware: [AuthMiddleware] })
+  @Post('/list/page')
   async listDictByPage(@Body() dictQueryRequest: DictQueryRequest) {
     const { current, pageSize } = dictQueryRequest;
     // current 和 pageSize 必须不能为空
@@ -124,52 +116,31 @@ export class DictController {
   }
 
   /**
-   * 获取当前用户可选的全部资源列表
+   * （通过）获取当前用户可选的全部资源列表
    */
-  @Get('/my/list')
+  @Get('/my/list', { middleware: [JwtMiddleware] })
   async listMyDict() {
     const dictQueryRequest = new DictQueryRequest();
-    // 需要审核通过的，且是本人的
-    dictQueryRequest.reviewStatus = 1;
-    dictQueryRequest.userId =
-      this.ctx.session[UserConstant.USER_LOGIN_STATE].id;
-    const resultData = await this.dictServiceImpl.getQueryWrapper(
+    // 需要审核通过的，且是本人的，或者公开的（状态为 1）
+    dictQueryRequest.reviewStatus !== 2;
+    dictQueryRequest.userId = this.ctx.userInfo.id;
+    const { records } = await this.dictServiceImpl.getQueryWrapper(
       dictQueryRequest
     );
-    return this.resultUtils.success(resultData);
+    return this.resultUtils.success(records);
   }
 
   /**
-   * 分页获取当前用户可选的资源列表（可选资源为 0-待审核的 1-已审核的(即为公开词库)）
+   * （通过）分页获取当前用户可选的资源列表（可选资源为 0-待审核的 1-已审核的(即为公开词库)）
    */
-  @Post('/my/list/page')
+  @Post('/my/list/page', { middleware: [JwtMiddleware] })
   async listMyDictByPage(@Body() dictQueryRequest: DictQueryRequest) {
     const { current, pageSize } = dictQueryRequest;
     // current 和 pageSize 必须不能为空
     if (current == null || pageSize == null)
       throw new BusinessException(ErrorCode.PARAMS_ERROR);
-    // 需要审核通过的，且是本人的
     dictQueryRequest.reviewStatus !== 2;
-    dictQueryRequest.userId =
-      this.ctx.session[UserConstant.USER_LOGIN_STATE].id;
-    const resultData = await this.dictServiceImpl.getQueryWrapper(
-      dictQueryRequest
-    );
-    return this.resultUtils.success(resultData);
-  }
-
-  /**
-   * 分页获取当前用户创建的资源（创建资源为 0-待审核的 1-已审核的 2-已拒绝的）
-   */
-  @Get('/my/add/list/page')
-  async listMyAddDictByPage(@Query() dictQueryRequest: DictQueryRequest) {
-    const { current, pageSize } = dictQueryRequest;
-    // current 和 pageSize 必须不能为空
-    if (current == null || pageSize == null)
-      throw new BusinessException(ErrorCode.PARAMS_ERROR);
-    // 需要是本人的
-    dictQueryRequest.userId =
-      this.ctx.session[UserConstant.USER_LOGIN_STATE].id;
+    dictQueryRequest.userId = this.ctx.userInfo.id;
     const resultData = await this.dictServiceImpl.getQueryWrapper(
       dictQueryRequest
     );
@@ -178,8 +149,36 @@ export class DictController {
   //#endregion
 
   /**
-   * 生成创建表的 SQL
+   * （通过）生成创建表的 SQL
    */
-  // @Get('/generator/sql')
-  // async generateCreateSql(@Query() dictIdRequest: RequestById) {}
+  @Post('/generate/sql')
+  async generateCreateSql(@Body() dictIdRequest: RequestById) {
+    const tableSchema = new TableSchema();
+    const { dataValues } = await Dict.findOne({
+      where: {
+        id: dictIdRequest.id,
+      },
+    });
+    tableSchema.tableName = 'dict';
+    tableSchema.tableComment = dataValues.name;
+    tableSchema.mockNum = 20;
+    const idField = new Field();
+    idField.fieldName = 'id';
+    idField.fieldType = 'bigint';
+    idField.notNull = true;
+    idField.comment = 'id';
+    idField.mockType = '不模拟';
+    idField.primaryKey = true;
+    idField.autoIncrement = true;
+    tableSchema.fieldList.push(idField);
+    const dataField = new Field();
+    dataField.fieldName = 'data';
+    dataField.fieldType = 'text';
+    dataField.comment = '数据';
+    dataField.mockType = '词库';
+    dataField.mockParams = dataValues.content;
+    tableSchema.fieldList.push(dataField);
+    const resultData = await this.generatorFacade.generateAll(tableSchema);
+    return this.resultUtils.success(resultData);
+  }
 }

@@ -2,7 +2,6 @@ import { Provide, Inject } from '@midwayjs/core';
 import { Context } from '@midwayjs/koa';
 import { DictService } from '../DictService';
 import { Dict } from '@/model/entitys/dict';
-import { UserConstant } from '@/constant/UserConstant';
 import { BusinessException } from '@/exception/BusinessException';
 import { ErrorCode } from '@/common/ErrorCode';
 import { UserServiceImpl } from './UserServiceImpl';
@@ -13,10 +12,9 @@ import { PageInfoVO } from '@/typings/model/vo/pageInfoVo';
 @Provide()
 export class DictServiceImpl implements DictService {
   @Inject()
-  ctx: Context;
-
+  private ctx: Context;
   @Inject()
-  userServiceImpl: UserServiceImpl;
+  private userServiceImpl: UserServiceImpl;
 
   /**
    * 处理 dict 中的 content 内容
@@ -42,8 +40,15 @@ export class DictServiceImpl implements DictService {
   ): Promise<PageInfoVO<Dict>> {
     // 数据的偏移量
     let offset;
-    const { name, content, reviewStatus, userId, pageSize, current } =
-      dictQueryRequest;
+    const {
+      name,
+      content,
+      reviewStatus,
+      reviewMessage,
+      userId,
+      pageSize,
+      current,
+    } = dictQueryRequest;
     // 若 sortField 或者 sortOrder 为空，则让其分别为 id 和 ASC
     let { sortField, sortOrder } = dictQueryRequest;
     if (sortField == null || sortOrder == null) {
@@ -72,6 +77,12 @@ export class DictServiceImpl implements DictService {
     const reviewStatusSelect = {
       reviewStatus: dictQueryRequest.reviewStatus,
     };
+    // reviewMessage 模糊查询条件
+    const reviewMessageLikeSelect = {
+      reviewMessage: {
+        [Op.like]: '%' + dictQueryRequest.reviewMessage + '%',
+      },
+    };
     // userId 查询条件
     const userIdSelect = {
       userId: dictQueryRequest.userId,
@@ -83,8 +94,12 @@ export class DictServiceImpl implements DictService {
         [Op.and]: [
           name ? nameLikeSelect : null,
           content ? contentLikeSelect : null,
-          reviewStatus ? reviewStatusSelect : null,
+          reviewStatus || reviewStatus === 0 ? reviewStatusSelect : null,
           userId ? userIdSelect : null,
+          reviewMessage ? reviewMessageLikeSelect : null,
+          {
+            isDelete: 0,
+          },
         ],
       },
       limit: pageSize,
@@ -122,18 +137,25 @@ export class DictServiceImpl implements DictService {
    * 添加词库
    * @param dictName 词库名字
    * @param dictContent 词库内容
+   * @param reviewStatus 状态
+   * @param reviewMessage 审核信息
    * @return 插入的词条的 id
    */
   async addDict(
     dictName: string,
-    dictContent: string
+    dictContent: string,
+    reviewStatus: number,
+    reviewMessage: string
   ): Promise<{ id: number }> {
-    const curUserId = this.ctx.session[UserConstant.USER_LOGIN_STATE].id;
-    const result = await new Dict({
+    const curUserId = this.ctx.userInfo.id;
+    const addDictObj = {
       name: dictName,
       content: dictContent,
       userId: curUserId,
-    }).save();
+    };
+    if (reviewStatus) addDictObj['reviewStatus'] = reviewStatus;
+    if (reviewMessage) addDictObj['reviewMessage'] = reviewMessage;
+    const result = await new Dict(addDictObj).save();
     if (result == null) throw new BusinessException(ErrorCode.OPERATION_ERROR);
     return { id: result['null'] };
   }
@@ -144,7 +166,7 @@ export class DictServiceImpl implements DictService {
    */
   async deleteDict(id: number): Promise<boolean> {
     // 仅为本人或者管理员才可以删除
-    const curUserId = this.ctx.session[UserConstant.USER_LOGIN_STATE].id;
+    const curUserId = this.ctx.userInfo.id;
     const {
       dataValues: { userId },
     } = await Dict.findOne({
@@ -180,12 +202,14 @@ export class DictServiceImpl implements DictService {
     reviewStatus: number,
     reviewMessage: string
   ): Promise<boolean> {
+    const updateObj = {};
+    if (name) updateObj['name'] = name;
+    if (content) updateObj['content'] = content;
+    if (reviewStatus) updateObj['reviewStatus'] = reviewStatus;
+    if (reviewMessage) updateObj['reviewMessage'] = reviewMessage;
     const result = await Dict.update(
       {
-        name,
-        content,
-        reviewStatus,
-        reviewMessage,
+        ...updateObj,
       },
       {
         where: { id },

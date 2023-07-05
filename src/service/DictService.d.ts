@@ -11,7 +11,12 @@ export interface DictService {
    * @param dictName 词条名
    * @param dictContent 词条内容
    */
-  addDict(dictName: string, dictContent: string): Promise<{ id: number }>;
+  addDict(
+    dictName: string,
+    dictContent: string,
+    reviewStatus: number,
+    reviewMessage: string
+  ): Promise<{ id: number }>;
 
   /**
    * 删除一个词条

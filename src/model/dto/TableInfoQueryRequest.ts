@@ -24,6 +24,12 @@ export class TableInfoQueryRequest extends PageRequest {
   reviewStatus: number;
 
   /**
+   * 审核信息
+   */
+  @Rule(RuleType.string())
+  reviewMessage: string;
+
+  /**
    * 创建用户
    */
   @Rule(RuleType.number())

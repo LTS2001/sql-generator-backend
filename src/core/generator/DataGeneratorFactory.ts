@@ -5,6 +5,7 @@ import { RandomDataGenerator } from './RandomDataGenerator';
 import { IncreaseDataGenerator } from './IncreaseDataGenerator';
 import { RuleDataGenerator } from './RuleDataGenerator';
 import { MockType } from '../model/enums/MockTypeEnum';
+import { DictDataGenerator } from './DictDataGenerator';
 
 /**
  * 数据生成器工厂
@@ -23,6 +24,8 @@ export class DataGeneratorFactory {
   private increaseDataGenerator: IncreaseDataGenerator;
   @Inject()
   private ruleDataGenerator: RuleDataGenerator;
+  @Inject()
+  private dictDataGenerator: DictDataGenerator;
   /**
    * 模拟类型 => 生成器实例映射
    */
@@ -39,7 +42,8 @@ export class DataGeneratorFactory {
       .set(MockType['固定'], this.fixedDataGenerator)
       .set(MockType['随机'], this.randomDataGenerator)
       .set(MockType['规则'], this.ruleDataGenerator)
-      .set(MockType['递增'], this.increaseDataGenerator);
+      .set(MockType['递增'], this.increaseDataGenerator)
+      .set(MockType['词库'], this.dictDataGenerator);
   }
   /**
    * 获取实例

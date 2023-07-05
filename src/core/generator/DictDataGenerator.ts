@@ -6,14 +6,11 @@ import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
 @Scope(ScopeEnum.Singleton)
 export class DictDataGenerator implements DataGenerate {
   doGenerate(field: Field, rowNum: number): string[] {
-    let mockParams: string = field.mockParams;
+    const dictContent: Array<string> = JSON.parse(field.mockParams);
     const list = new Array<string>();
-    if (mockParams == null) {
-      mockParams = '1';
-    }
-    const initValue = parseInt(mockParams);
     for (let i = 0; i < rowNum; i++) {
-      list.push((initValue + i).toString());
+      const randomNum = Math.ceil(Math.random() * (dictContent.length - 1));
+      list.push(dictContent[randomNum]);
     }
     return list;
   }

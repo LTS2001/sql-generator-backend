@@ -1,6 +1,7 @@
+import { PageRequest } from '@/common/PageRequest';
 import { Rule, RuleType } from '@midwayjs/validate';
 
-export class UserUpdateRequest {
+export class UserQueryRequest extends PageRequest {
   /**
    * id
    */

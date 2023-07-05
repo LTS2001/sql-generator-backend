@@ -9,19 +9,19 @@ export class FieldInfoUpdateRequest {
   /**
    * 名称
    */
-  @Rule(RuleType.string().max(20).required())
+  @Rule(RuleType.string().max(20))
   name: string;
 
   /**
    * 字段名称
    */
-  @Rule(RuleType.string().max(20).required())
+  @Rule(RuleType.string().max(20))
   fieldName: string;
 
   /**
    * 内容
    */
-  @Rule(RuleType.string().max(20000).required())
+  @Rule(RuleType.string().max(20000))
   content: string;
 
   /**

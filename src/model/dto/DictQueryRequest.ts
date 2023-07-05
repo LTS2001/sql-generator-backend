@@ -8,7 +8,7 @@ export class DictQueryRequest extends PageRequest {
   /**
    * 名称
    */
-  // @Rule(RuleType.string().max(30))
+  @Rule(RuleType.string().max(30))
   name: string;
 
   /**
@@ -22,6 +22,12 @@ export class DictQueryRequest extends PageRequest {
    */
   @Rule(RuleType.number())
   reviewStatus: number;
+
+  /**
+   * 审核信息
+   */
+  @Rule(RuleType.string())
+  reviewMessage: string;
 
   /**
    * 创建用户

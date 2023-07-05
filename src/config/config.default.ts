@@ -15,9 +15,6 @@ export default (appInfo: MidwayAppInfo) => {
     egg: {
       port: 7001,
     },
-    // security: {
-    //   csrf: true,
-    // },
     paths: {
       '@/*': ['src/*'],
     },
@@ -34,7 +31,6 @@ export default (appInfo: MidwayAppInfo) => {
         default: join(__dirname, '../templates'),
       },
     },
-    ejs: {},
     cors: {
       credentials: true,
     },
@@ -66,6 +62,10 @@ export default (appInfo: MidwayAppInfo) => {
       cleanTimeout: 5 * 60 * 1000,
       // 仅在匹配路径到 /sql/get/schema/excel 的时候去解析 body 中的文件信息
       match: /\/sql\/get\/schema\/excel/,
+    },
+    jwt: {
+      secret: 'my name is litaosheng',
+      expiresIn: '1d',
     },
   } as MidwayConfig;
 };

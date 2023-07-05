@@ -4,6 +4,8 @@ import { Op } from 'sequelize';
 import { Field, TableSchema } from './TableSchema';
 import { Parser, Create } from 'node-sql-parser';
 import xlsx from 'node-xlsx';
+import { BusinessException } from '@/exception/BusinessException';
+import { ErrorCode } from '@/common/ErrorCode';
 
 @Provide()
 export class TableSchemaBuilder {
@@ -16,12 +18,12 @@ export class TableSchemaBuilder {
    */
   async buildFormAuto({ content }: { content: string }): Promise<TableSchema> {
     if (content == null) {
-      throw new Error('请求参数错误');
+      throw new BusinessException(ErrorCode.PARAMS_ERROR);
     }
     // 切分单词
     const words: string[] = content.split(/[,，]/);
     if (words == null || words.length > 20) {
-      throw new Error('请求参数错误');
+      throw new BusinessException(ErrorCode.PARAMS_ERROR);
     }
     return new Promise((resolve, reject) => {
       // 根据单词去匹配列信息，未匹配到的使用默认值
@@ -85,7 +87,10 @@ export class TableSchemaBuilder {
     try {
       ast = new Parser().astify(sql);
     } catch (error) {
-      throw new Error(error.message);
+      throw new BusinessException(
+        ErrorCode.PARAMS_ERROR,
+        '建表 sql 语句格式错误' + error.message
+      );
     }
     // ast 返回一个数组对象，一个对象对应一张表
     const curTable: Create = ast[0];
@@ -113,7 +118,7 @@ export class TableSchemaBuilder {
         tableSchema.fieldList.push(curField);
       });
     } catch (error) {
-      throw new Error(error.message);
+      throw new BusinessException(ErrorCode.SYSTEM_ERROR);
     }
     return tableSchema;
   }
@@ -125,7 +130,13 @@ export class TableSchemaBuilder {
    */
   buildFromExcel(filePath: string): TableSchema {
     // {"name":"Sheet1","data":[["dbName","litaosehng"],["tableName","user"]]}
-    const excelTable = xlsx.parse(filePath);
+    let excelTable;
+    try {
+      excelTable = xlsx.parse(filePath);
+    } catch (error) {
+      throw new BusinessException(ErrorCode.PARAMS_ERROR, error.message);
+    }
+
     const excelData = excelTable[0].data;
     // 验证传入的 excel 表格的头部字段是否正确
     const constantKey = [
@@ -149,7 +160,8 @@ export class TableSchemaBuilder {
       if (headerKeyArr[i] === constantKey[i] || 'fieldName*' || 'fieldType*') {
         continue;
       }
-      throw new Error(
+      throw new BusinessException(
+        ErrorCode.PARAMS_ERROR,
         '表格第一行传入的字段不正确，请认真检查后在重新发送请求！'
       );
     }
@@ -170,7 +182,10 @@ export class TableSchemaBuilder {
       const curField = excelData[i];
       if (curField.length === 0) break;
       if (curField[4] == null || curField[5] == null) {
-        throw new Error('fieldName 或 fieldType 不能为空');
+        throw new BusinessException(
+          ErrorCode.PARAMS_ERROR,
+          'fieldName 或 fieldType 不能为空'
+        );
       }
       const field = new Field();
       field.fieldName = curField[4];

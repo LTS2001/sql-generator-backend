@@ -6,12 +6,6 @@ import { PageRequest } from '@/common/PageRequest';
  */
 export class FieldInfoQueryRequest extends PageRequest {
   /**
-   * 同时搜索名称或字段名称
-   */
-  @Rule(RuleType.string())
-  searchName: string;
-
-  /**
    * 名称
    */
   @Rule(RuleType.string().max(30))
@@ -34,6 +28,12 @@ export class FieldInfoQueryRequest extends PageRequest {
    */
   @Rule(RuleType.number())
   reviewStatus: number;
+
+  /**
+   * 审核信息
+   */
+  @Rule(RuleType.string())
+  reviewMessage: string;
 
   /**
    * 创建用户

@@ -15,10 +15,10 @@ export class AuthGuard implements IGuard<Context> {
       supplierClz,
       methodName
     );
-    if (roleNameList && roleNameList.length && context.user.userRole) {
-      // 假设中间件已经拿到了用户角色信息，保存到了 context.user.userRole 中
+    if (roleNameList && roleNameList.length && context.userInfo.userRole) {
+      // 假设中间件已经拿到了用户角色信息，保存到了 context.userInfo.userRole 中
       // 直接判断是否包含该角色
-      return roleNameList.includes(context.user.userRole);
+      return roleNameList.includes(context.userInfo.userRole);
     }
     return false;
   }

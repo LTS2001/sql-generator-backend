@@ -22,6 +22,7 @@ export class UserUpdateRequest {
   /**
    * 用户头像
    */
+  @Rule(RuleType.string())
   userAvatar: string;
 
   /**
@@ -33,6 +34,7 @@ export class UserUpdateRequest {
   /**
    * 用户角色：user，admin
    */
+  @Rule(RuleType.string())
   userRole: string;
 
   /**

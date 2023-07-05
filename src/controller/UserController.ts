@@ -7,6 +7,8 @@ import {
   UseGuard,
   Query,
 } from '@midwayjs/core';
+import { JwtService } from '@midwayjs/jwt';
+import { Context } from '@midwayjs/koa';
 import { UserRegisterRequest } from '@/model/dto/UserRegisterRequest';
 import { UserServiceImpl } from '@/service/impl/UserServiceImpl';
 import { UserConstant } from '@/constant/UserConstant';
@@ -16,8 +18,10 @@ import { UserAddRequest } from '@/model/dto/UserAddRequest';
 import { RequestById } from '@/common/RequestById';
 import { AuthGuard } from '@/guard/auth.guard';
 import { Role } from '@/decorator/role.decorator';
-import { AuthMiddleware } from '@/middleware/auth.middleware';
 import { UserUpdateRequest } from '@/model/dto/UserUpdateRequest';
+import { JwtMiddleware } from '@/middleware/jwt.middleware';
+import { BusinessException } from '@/exception/BusinessException';
+import { ErrorCode } from '@/common/ErrorCode';
 
 @Controller('/user')
 export class UserController {
@@ -25,6 +29,10 @@ export class UserController {
   private userServiceImpl: UserServiceImpl;
   @Inject()
   private resultUtil: ResultUtils;
+  @Inject()
+  private jwtService: JwtService;
+  @Inject()
+  private ctx: Context;
 
   /**
    * 用户注册
@@ -49,17 +57,20 @@ export class UserController {
    */
   @Post('/login')
   async userLogin(@Body() userLoginRequest: userLoginRequest) {
-    const resultData = await this.userServiceImpl.userLogin(
+    const userInfo = await this.userServiceImpl.userLogin(
       userLoginRequest.userAccount,
       userLoginRequest.userPassword
     );
-    return this.resultUtil.success(resultData);
+    // 设置响应头
+    this.ctx.set('token', `Bearer ${this.jwtService.signSync(userInfo)}`);
+    this.ctx.set('Access-Control-Expose-Headers', 'token');
+    return this.resultUtil.success(userInfo);
   }
 
   /**
    * 获取当前用户信息
    */
-  @Get('/get/login')
+  @Get('/get/login', { middleware: [JwtMiddleware] })
   async getLoginUser() {
     const resultData = await this.userServiceImpl.getLoginUser();
     return this.resultUtil.success(resultData);
@@ -80,7 +91,7 @@ export class UserController {
    */
   @UseGuard(AuthGuard)
   @Role([UserConstant.ADMIN_ROLE])
-  @Post('/add')
+  @Post('/add', { middleware: [JwtMiddleware] })
   async addUser(@Body() userAddRequest: UserAddRequest) {
     const { userName, userAccount, userPassword, userRole } = userAddRequest;
     const resultData = await this.userServiceImpl.userRegister(
@@ -98,7 +109,7 @@ export class UserController {
    */
   @UseGuard(AuthGuard)
   @Role([UserConstant.ADMIN_ROLE])
-  @Post('/delete', { middleware: [AuthMiddleware] })
+  @Post('/delete', { middleware: [JwtMiddleware] })
   async deleteUser(@Body() deleteRequest: RequestById) {
     const resultData = await this.userServiceImpl.deleteUser(deleteRequest.id);
     return this.resultUtil.success({
@@ -112,7 +123,7 @@ export class UserController {
    */
   @UseGuard(AuthGuard)
   @Role([UserConstant.ADMIN_ROLE])
-  @Post('/update', { middleware: [AuthMiddleware] })
+  @Post('/update', { middleware: [JwtMiddleware] })
   async updateUser(@Body() userUpdateRequest: UserUpdateRequest) {
     const resultData = await this.userServiceImpl.updateUser(userUpdateRequest);
     return this.resultUtil.success({
@@ -126,9 +137,26 @@ export class UserController {
    */
   @UseGuard(AuthGuard)
   @Role([UserConstant.ADMIN_ROLE])
-  @Get('/get', { middleware: [AuthMiddleware] })
+  @Get('/get', { middleware: [JwtMiddleware] })
   async getUserById(@Query() getRequest: RequestById) {
     const resultData = await this.userServiceImpl.getUser(getRequest.id);
+    return this.resultUtil.success(resultData);
+  }
+
+  /**
+   * 分页获取
+   */
+  @UseGuard(AuthGuard)
+  @Role([UserConstant.ADMIN_ROLE])
+  @Post('/list/page', { middleware: [JwtMiddleware] })
+  async listUserByPage(@Body() userQueryRequest) {
+    const { current, pageSize } = userQueryRequest;
+    // current 和 pageSize 必须不能为空
+    if (current == null || pageSize == null)
+      throw new BusinessException(ErrorCode.PARAMS_ERROR);
+    const resultData = await this.userServiceImpl.getQueryWrapper(
+      userQueryRequest
+    );
     return this.resultUtil.success(resultData);
   }
   //#endregion

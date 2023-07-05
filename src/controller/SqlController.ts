@@ -21,19 +21,10 @@ export class SqlController {
 
   @Post('/generate/schema')
   async generateBySchema(@Body() tableSchemaRequest: TableSchemaRequest) {
-    return new Promise((resolve, reject) => {
-      try {
-        resolve(this.generatorFacade.generateAll(tableSchemaRequest));
-      } catch (error) {
-        reject(error.message);
-      }
-    })
-      .then(res => {
-        return this.resultUtils.success(res as GenerateVO);
-      })
-      .catch(error => {
-        return error;
-      });
+    const resultData = await this.generatorFacade.generateAll(
+      tableSchemaRequest
+    );
+    return this.resultUtils.success(resultData);
   }
 
   @Post('/get/schema/auto')
