@@ -19,7 +19,13 @@ export class GlobalMiddleware implements IMiddleware<Context, NextFunction> {
             });
             needHandleObj[key] = arr;
           }
-          if (needHandleObj[key] !== '') resultBody[key] = needHandleObj[key];
+          if (needHandleObj[key] !== '') {
+            if (key === 'defaultValue') {
+              resultBody[key] = `${needHandleObj[key]}`;
+              continue;
+            }
+            resultBody[key] = needHandleObj[key];
+          }
         }
         return resultBody;
       }

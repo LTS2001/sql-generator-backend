@@ -117,6 +117,9 @@ export class DictServiceImpl implements DictService {
           content ? contentLikeSelect : null,
           reviewStatus ? reviewStatusSelect : null,
           userId ? userIdSelect : null,
+          {
+            isDelete: 0,
+          },
         ],
       },
     });

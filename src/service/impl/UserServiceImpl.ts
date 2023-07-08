@@ -72,6 +72,7 @@ export class UserServiceImpl implements UserService {
     const userInfoList = await User.findAll({
       where: {
         userAccount,
+        isDelete: 0,
       },
     });
     // 用户不存在
