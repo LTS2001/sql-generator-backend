@@ -19,8 +19,8 @@ export class GlobalMiddleware implements IMiddleware<Context, NextFunction> {
             });
             needHandleObj[key] = arr;
           }
-          if (needHandleObj[key] !== '') {
-            if (key === 'defaultValue') {
+          if (needHandleObj[key] !== '' && needHandleObj[key] != null) {
+            if (key === 'defaultValue' || key === 'mockParams') {
               resultBody[key] = `${needHandleObj[key]}`;
               continue;
             }
