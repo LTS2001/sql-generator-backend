@@ -1,13 +1,13 @@
 import { MidwayConfig, MidwayAppInfo } from '@midwayjs/core';
 import { tmpdir } from 'os';
 import { join } from 'path';
-
 import { Dict } from '@/model/entitys/dict';
 import { FieldInfo } from '@/model/entitys/fieldInfo';
 import { Report } from '@/model/entitys/report';
 import { TableInfo } from '@/model/entitys/tableInfo';
 import { User } from '@/model/entitys/user';
-
+import * as dotenv from 'dotenv';
+dotenv.config();
 export default (appInfo: MidwayAppInfo) => {
   return {
     // use for cookie sign key, should change to your own and keep security
@@ -37,11 +37,11 @@ export default (appInfo: MidwayAppInfo) => {
     sequelize: {
       dataSource: {
         default: {
-          database: 'sqlfather',
-          username: 'root',
-          password: 'root',
-          host: '127.0.0.1',
-          port: 3306,
+          database: process.env.MYSQL_DATABASE || '',
+          username: process.env.MYSQL_USERNAME || '',
+          password: process.env.MYSQL_PASSWORD || '',
+          host: process.env.MYSQL_HOST || '127.0.0.1',
+          port: process.env.MYSQL_PORT || 3306,
           encrypt: false,
           dialect: 'mysql',
           define: { charset: 'utf8' },
