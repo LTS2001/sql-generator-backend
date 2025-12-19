@@ -34,6 +34,12 @@ export default (appInfo: MidwayAppInfo) => {
     cors: {
       credentials: true,
     },
+    logger: {
+      // 设置日志根目录，避免默认空路径导致初始化报错
+      default: {
+        dir: join(appInfo.appDir || appInfo.baseDir || process.cwd(), 'logs'),
+      },
+    },
     sequelize: {
       dataSource: {
         default: {
