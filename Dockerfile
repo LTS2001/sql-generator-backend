@@ -1,12 +1,12 @@
-FROM node:18.20.4
+FROM node:22.19.0
 
 WORKDIR /app/sql-generator-backend
 
 COPY . /app/sql-generator-backend
 
-RUN npm config set registry https://registry.npmmirror.com/
-RUN npm install
+RUN npm i -g pnpm
+RUN pnpm i
 
 EXPOSE 7001
 
-CMD [ "npm", "run", "dev" ]
+CMD [ "pnpm", "run", "start" ]
