@@ -2,17 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "bootstrap.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["dist/**"]
-      }
+      "src": "api/index.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "bootstrap.js"
+      "dest": "/api/index.js"
     }
   ]
 }
